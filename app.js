@@ -5,11 +5,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const md5 = require("md5");
 
 const passport = require("passport");
 const passportLocal = require("passport-local");
 const passportLocalMongoose = require("passport-local-mongoose");
+
+// LEVEL 2 SECURITY -> DATABASE ENCRYPTION
+const encrypt = require("mongoose-encryption");
 
 const app = express();
 
@@ -19,14 +21,18 @@ app.use(express.static("public"));
 
 mongoose.connect("mongodb://localhost:27017/userDB");
 
+// LEVEL 1 SECURITY -> USERNAME AND PASSWORD IN A DB
 const userSchema = new mongoose.Schema({
 
     email: String,
     password: String
 })
 
+// LEVEL 2 SECURITY -> DATABASE ENCRYPTION
 // encrypting our data
-// userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ['password']});
+const secret = "thisIsOurLittleSecret";
+// encryptedFields: ["password"] only encrypts the password field in the data
+userSchema.plugin(encrypt, {secret: secret, encryptedFields: ["password"]});
 
 const User = new mongoose.model("User", userSchema);
 
@@ -48,7 +54,7 @@ app.post("/register", (req, res) => {
     const newUser = new User({
 
         email: req.body.username,
-        password: md5(req.body.password)
+        password: req.body.password
 
     })
 
@@ -80,7 +86,7 @@ app.post("/login", (req, res) => {
 
             if(foundResult){
 
-                if( foundResult.password==md5(password) ){
+                if( foundResult.password==password ){
 
                     res.render("secrets");
                 }
