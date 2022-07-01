@@ -7,6 +7,10 @@ const ejs = require("ejs");
 const mongoose = require("mongoose");
 const md5 = require("md5");
 
+const passport = require("passport");
+const passportLocal = require("passport-local");
+const passportLocalMongoose = require("passport-local-mongoose");
+
 const app = express();
 
 app.use(bodyParser.urlencoded({extended: true}));
